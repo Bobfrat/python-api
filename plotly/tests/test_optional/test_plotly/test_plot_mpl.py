@@ -7,6 +7,8 @@ A module intended for use with Nose.
 """
 from __future__ import absolute_import
 
+import time
+
 from plotly.plotly import plotly as py
 from plotly import exceptions
 from nose.tools import raises
@@ -41,5 +43,13 @@ def test_update():
     url = py.plot_mpl(fig, update=update, filename="nosetests", auto_open=False)
     un = url.replace("https://plot.ly/~", "").split('/')[0]
     fid = url.replace("https://plot.ly/~", "").split('/')[1]
-    pfig = py.get_figure(un, fid)
-    assert pfig['layout']['title'] == title
+    num_attempts = 3
+    for i in range(num_attempts):
+        try:
+            pfig = py.get_figure(un, fid)
+            assert pfig['layout']['title'] == title
+            break
+        except exceptions.PlotlyError:
+            if i == num_attempts - 1:
+                raise
+            time.sleep(1)
